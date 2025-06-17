@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,8 +23,12 @@ import br.gov.ce.cgd.service.DocumentoService;
 import br.gov.ce.cgd.service.TipoDocumentoService;
 import br.gov.ce.cgd.service.UsuarioService;
 import br.gov.ce.cgd.util.Chart;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Controller
+@Tag(name = "Dashboard", description = "Endpoints relacionados ao dashboard da aplicação")
 public class DashboardController {
 
     private final TipoDocumentoService tipoDocumentoService;
@@ -43,44 +48,38 @@ public class DashboardController {
         this.usuarioService = usuarioService;
     }
 
+    @Operation(summary = "Exibe o dashboard com dados, gráficos e lista paginada de usuários")
     @GetMapping("/dashboard")
     public String dashboard(
             Model model,
             Principal principal,
-            // Recebe parâmetros de paginação da aba usuários, com valores padrão
+            @Parameter(description = "Número da página para paginação da aba usuários", example = "0")
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
+            @Parameter(description = "Tamanho da página para paginação da aba usuários", example = "10")
+            @RequestParam(defaultValue = "10") int size
     ) {
-        // Listar tipos de documentos ativos
         List<TipoDocumento> tipos = tipoDocumentoService.listarAtivos();
 
-        // Obter última numeração para cada tipo
         Map<Long, Object> ultimasNumeracoes = tipos.stream()
                 .collect(Collectors.toMap(
                         TipoDocumento::getId,
                         tipo -> documentoService.obterUltimaNumeracao(tipo.getId())
                 ));
 
-        // Dados para gráfico documentos por tipo
         List<Object[]> dadosGraficos = documentoService.contarDocumentosPorTipo();
         Map<String, List<?>> listasGraficos = Chart.separarNomesEQuantidades(dadosGraficos);
 
-        // Dados para gráfico documentos por cartório
         List<Object[]> dadosCartorios = documentoService.contarDocumentosPorCartorio();
         Map<String, List<?>> listasGraficosCartorio = Chart.separarNomesEQuantidades(dadosCartorios);
 
-        // Listar cartórios ativos
         List<Cartorio> cartorios = cartorioService.listarAtivos();
 
-        // Obter usuário logado
         Usuario usuario = usuarioService.findByCpf(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o CPF: " + principal.getName()));
 
-        // Paginação da lista de usuários para a aba usuários
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("id").ascending()); //Define tamanho da paginação
         Page<Usuario> usuarios = usuarioService.listarTodos(pageable);
 
-        // Atributos para a view (dashboard + aba usuários)
         model.addAttribute("usuario", usuario);
         model.addAttribute("usuarioPerfil", usuario.getPerfil().name());
         model.addAttribute("tiposDocumentos", tipos);
@@ -91,15 +90,12 @@ public class DashboardController {
         model.addAttribute("novoCartorio", new Cartorio());
         model.addAttribute("cartorios", cartorios);
 
-        // Dados gráficos para documentos por tipo
         model.addAttribute("nomesGraficos", listasGraficos.get("nomes"));
         model.addAttribute("quantidadesGraficos", listasGraficos.get("quantidades"));
 
-        // Dados gráficos para documentos por cartório
         model.addAttribute("nomesCartorios", listasGraficosCartorio.get("nomes"));
         model.addAttribute("quantidadesCartorios", listasGraficosCartorio.get("quantidades"));
 
-        // Dados para paginação da aba usuários
         model.addAttribute("usuarios", usuarios);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", usuarios.getTotalPages());

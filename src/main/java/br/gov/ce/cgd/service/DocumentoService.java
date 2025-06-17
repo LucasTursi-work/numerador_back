@@ -2,6 +2,7 @@ package br.gov.ce.cgd.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -80,5 +81,41 @@ public class DocumentoService {
     
     public List<Documento> buscarUltimosDocumentos(int limite) {
         return documentoRepository.findByOrderByDataCadastroDesc(PageRequest.of(0, limite));
+    }
+
+    // Métodos CRUD que faltavam
+
+    public List<Documento> listarTodos() {
+        return documentoRepository.findAll();
+    }
+
+    public Optional<Documento> buscarPorId(Long id) {
+        return documentoRepository.findById(id);
+    }
+
+    @Transactional
+    public Documento salvar(Documento documento) {
+        documento.setDataCadastro(LocalDateTime.now());
+        return documentoRepository.save(documento);
+    }
+
+    @Transactional
+    public Optional<Documento> atualizar(Long id, Documento documentoAtualizado) {
+        return documentoRepository.findById(id).map(doc -> {
+            doc.setTipoDocumento(documentoAtualizado.getTipoDocumento());
+            doc.setCartorio(documentoAtualizado.getCartorio());
+            doc.setUsuario(documentoAtualizado.getUsuario());
+            doc.setNumero(documentoAtualizado.getNumero());
+            // Atualize outros campos se houver
+            return documentoRepository.save(doc);
+        });
+    }
+
+    @Transactional
+    public boolean deletar(Long id) {
+        return documentoRepository.findById(id).map(doc -> {
+            documentoRepository.delete(doc);
+            return true;
+        }).orElse(false);
     }
 }

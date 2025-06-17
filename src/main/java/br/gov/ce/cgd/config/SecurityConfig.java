@@ -43,7 +43,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-                .antMatchers("/**/css/**", "/**/javascript/**", "/**/images/**", "/login/**").permitAll()
+                .antMatchers(
+                    "/**/css/**",
+                    "/**/js/**",
+                    "/**/images/**",
+                    "/login/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
                 .antMatchers("/numerador/dashboard/**").hasAnyAuthority("USER", "ADMIN")
                 .anyRequest().authenticated()
             .and()
@@ -64,6 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .csrf().disable();
     }
+
     
     @Bean
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
@@ -72,20 +81,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             Usuario usuario = usuarioService.findByCpf(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
-//            String codigoValidador = request.getParameter("codigoValidador");
-//
-//            try {
-//                int codigo = Integer.parseInt(codigoValidador);
-//                if (!usuarioService.validate2FA(usuario.getId(), codigo)) {
-//                    SecurityContextHolder.clearContext();
-//                    response.sendRedirect("/numerador/login?error=2fa");
-//                    return;
-//                }
-//            } catch (NumberFormatException e) {
-//                SecurityContextHolder.clearContext();
-//                response.sendRedirect("/numerador/login?error=2fa");
-//                return;
-//            }
+            /**
+             * CASO QUERIA HABLITAR 2FA
+            String codigoValidador = request.getParameter("codigoValidador");
+
+            try {
+                int codigo = Integer.parseInt(codigoValidador);
+                if (!usuarioService.validate2FA(usuario.getId(), codigo)) {
+                    SecurityContextHolder.clearContext();
+                    response.sendRedirect("/numerador/login?error=2fa");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                SecurityContextHolder.clearContext();
+                response.sendRedirect("/numerador/login?error=2fa");
+                return;
+            }
+                */
 
             usuarioService.atualizarDataLogin(usuario.getId());
 
