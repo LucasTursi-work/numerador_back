@@ -8,8 +8,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
+
+import org.springframework.data.annotation.CreatedDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class Documento {
     @Column(name = "numero", nullable = false)
     private Integer numero;
 
+    @CreatedDate
     private LocalDateTime dataCadastro;
 
     @ManyToOne
@@ -40,9 +42,4 @@ public class Documento {
     
     @ManyToOne
     private Cartorio cartorio;
-
-    @PrePersist
-    protected void onCreate() {
-        dataCadastro = LocalDateTime.now();
-    }
 }

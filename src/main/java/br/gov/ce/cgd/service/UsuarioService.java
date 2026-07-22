@@ -1,6 +1,5 @@
 package br.gov.ce.cgd.service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,25 +7,39 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import com.google.zxing.WriterException;
-
+import br.gov.ce.cgd.dto.usuario.UsuarioUpdateDTO;
 import br.gov.ce.cgd.entity.Usuario;
+import br.gov.ce.cgd.enumerate.Perfil;
+import br.gov.ce.cgd.enumerate.Status;
 
 public interface UsuarioService extends UserDetailsService {
 
-    Usuario salvarUsuario(Usuario usuario);
-    Optional<Usuario> findById(Long id);
-    Optional<Usuario> findByCpf(String cpf);
-    Usuario atualizarUsuario(Long id, Usuario usuario, String SenhaAtual);
-    Page<Usuario> listarTodos(Pageable pageable);
-    void deletarUsuario(Long id);
-//    String enable2FA(Long id);
-//    boolean validate2FA(Long id, int codigoValidador);
-//    void disable2FA(Long id);
-//    byte[] generateQRCode(Long id) throws IOException, WriterException;
-    boolean validarSenha(Usuario usuario, String senha);
-	void alterarSenha(Long id, String senhaAtual, String novaSenha, String confirmarNovaSenha);
-	Page<Usuario> buscarPorNome(String nome, Pageable pageable);
-	Page<Usuario> buscarPorCpf(String cpf, Pageable pageable);
-	List<Usuario> listarTodos();
+    // CRUD básico
+    Usuario salvar(Usuario usuario);
+    Optional<Usuario> buscarPorId(Long id);
+    Optional<Usuario> buscarPorCpf(String cpf);
+    Optional<Usuario> buscarPorEmail(String email);
+    void deletarPorId(Long id);
+
+    // Validações e existências
+    boolean existePorCpf(String cpf);
+    boolean existePorEmail(String email);
+
+    // Atualizações
+    void atualizarDataLogin(Long id);
+    Usuario alterarStatus(Long id, Status status);
+    Usuario atualizarUsuario(Long id, UsuarioUpdateDTO dto, String senhaAtual);
+
+    // Filtragem
+    List<Usuario> buscarPorNome(String nome);
+    List<Usuario> buscarTodos();
+    Page<Usuario> filtrarUsuarios(String nome, String cpf, Perfil perfil, Status status, Pageable pageable);
+
+    // Senha
+    void alterarSenha(Long id, String senhaAtual, String novaSenha, String confirmarNovaSenha);
+    void senhaProvisoria(String email);
+
+    // Sessão
+    Usuario getUsuarioLogado();
+    void alterarSenhaUsuarioLogado(String senhaAtual, String novaSenha, String confirmarSenha);
 }

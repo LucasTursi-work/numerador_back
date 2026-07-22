@@ -1,18 +1,26 @@
 package br.gov.ce.cgd.entity;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+
+import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import br.gov.ce.cgd.enumerate.Perfil;
 import br.gov.ce.cgd.enumerate.Status;
@@ -27,9 +35,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_usuario")
-public class Usuario {
+@EntityListeners(AuditingEntityListener.class)
+public class Usuario implements UserDetails {
 
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
@@ -37,8 +51,8 @@ public class Usuario {
     @NotBlank
     private String nome;
 
-    @NotBlank
-    @Column(nullable = false, unique = true,  length = 11)
+    @CPF(message = "CPF inválido!")
+    @Column(updatable = false, nullable = false, unique = true, length = 11)
     private String cpf;
 
     @NotBlank
@@ -46,7 +60,6 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank
     @Column(nullable = false)
     private String senha;
 
@@ -56,15 +69,63 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Status status;
     
-    private LocalDateTime dataCadastro;
-    private LocalDateTime dataLogin;
-    
+    @Column(name = "tentativas_login")
+    private int tentativasLogin = 0;
 
-    @Column(name = "codigo_validador")
-    private String codigoValidador;
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime dataCadastro;
+
+    private LocalDateTime dataLogin;
+    private LocalDateTime dataAtualizacao;
+
+//    @Column(name = "validador")
+//    private String codigoValidador;
     
-    @PrePersist
-    protected void onCreate() {
-        dataCadastro = LocalDateTime.now();
+    @Column(name = "senha_provisoria")
+    private Boolean senhaProvisoria = false;
+
+    // Spring Security
+    @Transient
+    private Collection<? extends GrantedAuthority> authorities;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
     }
+
+    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return cpf;
+    }
+
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return status != Status.INATIVO;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return status == Status.ATIVO && !Boolean.TRUE.equals(senhaProvisoria);
+    }
+
 }

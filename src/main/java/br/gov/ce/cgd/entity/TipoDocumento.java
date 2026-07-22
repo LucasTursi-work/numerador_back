@@ -28,6 +28,6 @@ public class TipoDocumento {
     @Column(nullable = false, unique = true)
 	private String nome;
     
-	private boolean documentoAtivo = true;
+    private boolean tipoDocumentoAtivo = true;
 
 }

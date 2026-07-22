@@ -28,4 +28,18 @@ public class EmailService {
         
         mailSender.send(mimeMessage);
     }
+    
+    public void enviarEmail(String to, String subject, String text) {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text);
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao enviar e-mail: " + e.getMessage(), e);
+        }
+    }
+
 }

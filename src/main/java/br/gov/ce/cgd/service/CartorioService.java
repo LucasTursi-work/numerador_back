@@ -2,13 +2,16 @@ package br.gov.ce.cgd.service;
 
 import java.util.List;
 
+import javax.persistence.EntityNotFoundException;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.gov.ce.cgd.entity.Cartorio;
 import br.gov.ce.cgd.repository.CartorioRepository;
-
-import javax.persistence.EntityNotFoundException;
 
 @Service
 public class CartorioService {
@@ -19,12 +22,20 @@ public class CartorioService {
         this.cartorioRepository = cartorioRepository;
     }
 
-    public List<Cartorio> listarTodos() {
-        return cartorioRepository.findAll();
+//    public List<Cartorio> listarTodos() {
+//        return cartorioRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+//    }
+//    
+    public Page<Cartorio> listarTodos(Pageable pageable) {
+        return cartorioRepository.findAll(pageable);
+    }
+
+    public Page<Cartorio> listarPorNome(String nome, Pageable pageable) {
+        return cartorioRepository.findByNomeContainingIgnoreCase(nome, pageable);
     }
 
     public List<Cartorio> listarAtivos() {
-        return cartorioRepository.findByCartorioAtivoTrue();
+        return cartorioRepository.findByCartorioAtivoTrue(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public Cartorio buscarPorId(Long id) {

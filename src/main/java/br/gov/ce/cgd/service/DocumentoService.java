@@ -3,13 +3,14 @@ package br.gov.ce.cgd.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import br.gov.ce.cgd.dto.DocumentoDTO;
 import br.gov.ce.cgd.entity.Cartorio;
 import br.gov.ce.cgd.entity.Documento;
 import br.gov.ce.cgd.entity.TipoDocumento;
@@ -79,14 +80,24 @@ public class DocumentoService {
         return (ultimaNumeracao != null) ? ultimaNumeracao : 0;
     }
     
-    public List<Documento> buscarUltimosDocumentos(int limite) {
-        return documentoRepository.findByOrderByDataCadastroDesc(PageRequest.of(0, limite));
-    }
+    public List<DocumentoDTO> buscarUltimosDocumentosDTOs() {
+        return documentoRepository.findByOrderByDataCadastroDesc().stream().map(doc -> {
+            DocumentoDTO dto = new DocumentoDTO();
+            dto.setId(doc.getIdDocumento());
+            dto.setNumero(doc.getNumero());
+            dto.setDataCadastro(doc.getDataCadastro());
 
-    // Métodos CRUD que faltavam
+            dto.setUsuarioId(doc.getUsuario().getId());
+            dto.setNomeUsuario(doc.getUsuario().getNome());
 
-    public List<Documento> listarTodos() {
-        return documentoRepository.findAll();
+            dto.setTipoDocumentoId(doc.getTipoDocumento().getId());
+            dto.setNomeTipoDocumento(doc.getTipoDocumento().getNome());
+
+            dto.setCartorioId(doc.getCartorio().getId());
+            dto.setNomeCartorio(doc.getCartorio().getNome());
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public Optional<Documento> buscarPorId(Long id) {
@@ -106,7 +117,6 @@ public class DocumentoService {
             doc.setCartorio(documentoAtualizado.getCartorio());
             doc.setUsuario(documentoAtualizado.getUsuario());
             doc.setNumero(documentoAtualizado.getNumero());
-            // Atualize outros campos se houver
             return documentoRepository.save(doc);
         });
     }
@@ -118,4 +128,67 @@ public class DocumentoService {
             return true;
         }).orElse(false);
     }
+
+    public List<DocumentoDTO> listarTodosDTO() {
+        return documentoRepository.findAll().stream().map(doc -> {
+            DocumentoDTO dto = new DocumentoDTO();
+            dto.setId(doc.getIdDocumento());
+            dto.setNumero(doc.getNumero());
+            dto.setDataCadastro(doc.getDataCadastro());
+            dto.setUsuarioId(doc.getUsuario().getId());
+            dto.setTipoDocumentoId(doc.getTipoDocumento().getId());
+            dto.setCartorioId(doc.getCartorio().getId());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+    
+ // Lista todos os documentos dentro de um período como DTO, com filtros opcionais
+    public List<Documento> findByPeriodo(LocalDateTime inicio, LocalDateTime fim,
+                                         Long tipoDocumentoId, Long cartorioId, Long usuarioId) {
+        return documentoRepository.findByPeriodo(inicio, fim, tipoDocumentoId, cartorioId, usuarioId);
+    }
+    
+
+ // Contagem de documentos por tipo no período com filtros opcionais (MÚLTIPLOS IDS)
+    public List<Object[]> contarDocumentosPorTipoPeriodo(LocalDateTime inicio, LocalDateTime fim,
+                                                         List<Long> tipoDocumentoIds, List<Long> cartorioIds, List<Long> usuarioIds) {
+        // CORREÇÃO: Aponta para o método real que existe no seu DocumentoRepository
+        return documentoRepository.contarDocumentosPorTipoNoPeriodoMulti(inicio, fim, tipoDocumentoIds, cartorioIds, usuarioIds);
+    }
+
+    // Contagem de documentos por cartório no período com filtros opcionais (MÚLTIPLOS IDS)
+    public List<Object[]> contarDocumentosPorCartorioPeriodo(LocalDateTime inicio, LocalDateTime fim,
+                                                             List<Long> tipoDocumentoIds, List<Long> cartorioIds, List<Long> usuarioIds) {
+        // CORREÇÃO: Aponta para o método real que existe no seu DocumentoRepository
+        return documentoRepository.contarDocumentosPorCartorioNoPeriodoMulti(inicio, fim, tipoDocumentoIds, cartorioIds, usuarioIds);
+    }
+
+// Contagem de documentos por usuário no período com filtros opcionais (MÚLTIPLOS IDS)
+    public List<Object[]> contarDocumentosPorUsuarioPeriodo(LocalDateTime inicio, LocalDateTime fim,
+                                                            List<Long> tipoDocumentoIds, List<Long> cartorioIds, List<Long> usuarioIds) {
+        // CORREÇÃO: Aponta para o método real que existe no seu DocumentoRepository
+        return documentoRepository.contarDocumentosPorUsuarioNoPeriodoMulti(inicio, fim, tipoDocumentoIds, cartorioIds, usuarioIds);
+    }
+
+   public List<Documento> findByPeriodoMulti(LocalDateTime inicio, LocalDateTime fim, 
+                                              List<Long> tipos, List<Long> cartorios, List<Long> usuarios) {
+        return documentoRepository.findByPeriodoMulti(inicio, fim, tipos, cartorios, usuarios);
+    }
+
+    public List<Object[]> contarDocumentosPorTipoNoPeriodoMulti(LocalDateTime inicio, LocalDateTime fim, 
+                                                                List<Long> tipos, List<Long> cartorios, List<Long> usuarios) {
+        return documentoRepository.contarDocumentosPorTipoNoPeriodoMulti(inicio, fim, tipos, cartorios, usuarios);
+    }
+
+    public List<Object[]> contarDocumentosPorCartorioNoPeriodoMulti(LocalDateTime inicio, LocalDateTime fim, 
+                                                                    List<Long> tipos, List<Long> cartorios, List<Long> usuarios) {
+        return documentoRepository.contarDocumentosPorCartorioNoPeriodoMulti(inicio, fim, tipos, cartorios, usuarios);
+    }
+
+    public List<Object[]> contarDocumentosPorUsuarioNoPeriodoMulti(LocalDateTime inicio, LocalDateTime fim, 
+                                                                   List<Long> tipos, List<Long> cartorios, List<Long> usuarios) {
+        return documentoRepository.contarDocumentosPorUsuarioNoPeriodoMulti(inicio, fim, tipos, cartorios, usuarios);
+    }
+
+    
 }
