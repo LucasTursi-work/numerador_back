@@ -99,28 +99,29 @@ public interface DocumentoRepository extends JpaRepository<Documento, Long> {
                                                        @Param("cartorioId") Long cartorioId,
                                                        @Param("usuarioId") Long usuarioId);
 
-// 1. Logs de documentos
+// 1. Consulta dos Registros/Logs
     @Query("SELECT d FROM Documento d " +
-           "WHERE (:inicio IS NULL OR d.dataCadastro >= :inicio) " +
-           "  AND (:fim IS NULL OR d.dataCadastro <= :fim) " +
-           "  AND (cast(:tiposDocumentoIds as text) IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
-           "  AND (cast(:cartoriosIds as text) IS NULL OR d.cartorio.id IN :cartoriosIds) " +
-           "  AND (cast(:usuariosIds as text) IS NULL OR d.usuario.id IN :usuariosIds)")
+           "WHERE (cast(:inicio as timestamp) IS NULL OR d.dataCadastro >= :inicio) " +
+           "  AND (cast(:fim as timestamp) IS NULL OR d.dataCadastro <= :fim) " +
+           "  AND (:tiposDocumentoIds IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
+           "  AND (:cartoriosIds IS NULL OR d.cartorio.id IN :cartoriosIds) " +
+           "  AND (:usuariosIds IS NULL OR d.usuario.id IN :usuariosIds)")
     List<Documento> findByPeriodoMulti(@Param("inicio") LocalDateTime inicio,
                                        @Param("fim") LocalDateTime fim,
                                        @Param("tiposDocumentoIds") List<Long> tiposDocumentoIds,
                                        @Param("cartoriosIds") List<Long> cartoriosIds,
                                        @Param("usuariosIds") List<Long> usuariosIds);
 
-    // 2. Contagem por tipo no período
+    // 2. Contagem por Tipo de Documento (Gráfico 1)
     @Query("SELECT d.tipoDocumento.nome AS tipo, COUNT(d) AS total " +
            "FROM Documento d " +
-           "WHERE (:inicio IS NULL OR d.dataCadastro >= :inicio) " +
-           "  AND (:fim IS NULL OR d.dataCadastro <= :fim) " +
-           "  AND (cast(:tiposDocumentoIds as text) IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
-           "  AND (cast(:cartoriosIds as text) IS NULL OR d.cartorio.id IN :cartoriosIds) " +
-           "  AND (cast(:usuariosIds as text) IS NULL OR d.usuario.id IN :usuariosIds) " +
+           "WHERE (cast(:inicio as timestamp) IS NULL OR d.dataCadastro >= :inicio) " +
+           "  AND (cast(:fim as timestamp) IS NULL OR d.dataCadastro <= :fim) " +
+           "  AND (:tiposDocumentoIds IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
+           "  AND (:cartoriosIds IS NULL OR d.cartorio.id IN :cartoriosIds) " +
+           "  AND (:usuariosIds IS NULL OR d.usuario.id IN :usuariosIds) " +
            "GROUP BY d.tipoDocumento.nome " +
+           "HAVING COUNT(d) > 0 " +
            "ORDER BY total DESC")
     List<Object[]> contarDocumentosPorTipoNoPeriodoMulti(@Param("inicio") LocalDateTime inicio,
                                                          @Param("fim") LocalDateTime fim,
@@ -128,15 +129,16 @@ public interface DocumentoRepository extends JpaRepository<Documento, Long> {
                                                          @Param("cartoriosIds") List<Long> cartoriosIds,
                                                          @Param("usuariosIds") List<Long> usuariosIds);
 
-    // 3. Contagem por cartório no período
+    // 3. Contagem por Cartório (Gráfico 2)
     @Query("SELECT d.cartorio.nome AS cartorio, COUNT(d) AS total " +
            "FROM Documento d " +
-           "WHERE (:inicio IS NULL OR d.dataCadastro >= :inicio) " +
-           "  AND (:fim IS NULL OR d.dataCadastro <= :fim) " +
-           "  AND (cast(:tiposDocumentoIds as text) IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
-           "  AND (cast(:cartoriosIds as text) IS NULL OR d.cartorio.id IN :cartoriosIds) " +
-           "  AND (cast(:usuariosIds as text) IS NULL OR d.usuario.id IN :usuariosIds) " +
+           "WHERE (cast(:inicio as timestamp) IS NULL OR d.dataCadastro >= :inicio) " +
+           "  AND (cast(:fim as timestamp) IS NULL OR d.dataCadastro <= :fim) " +
+           "  AND (:tiposDocumentoIds IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
+           "  AND (:cartoriosIds IS NULL OR d.cartorio.id IN :cartoriosIds) " +
+           "  AND (:usuariosIds IS NULL OR d.usuario.id IN :usuariosIds) " +
            "GROUP BY d.cartorio.nome " +
+           "HAVING COUNT(d) > 0 " +
            "ORDER BY d.cartorio.nome ASC")
     List<Object[]> contarDocumentosPorCartorioNoPeriodoMulti(@Param("inicio") LocalDateTime inicio,
                                                              @Param("fim") LocalDateTime fim,
@@ -144,15 +146,16 @@ public interface DocumentoRepository extends JpaRepository<Documento, Long> {
                                                              @Param("cartoriosIds") List<Long> cartoriosIds,
                                                              @Param("usuariosIds") List<Long> usuariosIds);
 
-    // 4. Contagem por usuário no período
+    // 4. Contagem por Usuário (Gráfico 3)
     @Query("SELECT d.usuario.nome AS usuario, COUNT(d) AS total " +
            "FROM Documento d " +
-           "WHERE (:inicio IS NULL OR d.dataCadastro >= :inicio) " +
-           "  AND (:fim IS NULL OR d.dataCadastro <= :fim) " +
-           "  AND (cast(:tiposDocumentoIds as text) IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
-           "  AND (cast(:cartoriosIds as text) IS NULL OR d.cartorio.id IN :cartoriosIds) " +
-           "  AND (cast(:usuariosIds as text) IS NULL OR d.usuario.id IN :usuariosIds) " +
+           "WHERE (cast(:inicio as timestamp) IS NULL OR d.dataCadastro >= :inicio) " +
+           "  AND (cast(:fim as timestamp) IS NULL OR d.dataCadastro <= :fim) " +
+           "  AND (:tiposDocumentoIds IS NULL OR d.tipoDocumento.id IN :tiposDocumentoIds) " +
+           "  AND (:cartoriosIds IS NULL OR d.cartorio.id IN :cartoriosIds) " +
+           "  AND (:usuariosIds IS NULL OR d.usuario.id IN :usuariosIds) " +
            "GROUP BY d.usuario.nome " +
+           "HAVING COUNT(d) > 0 " +
            "ORDER BY d.usuario.nome ASC")
     List<Object[]> contarDocumentosPorUsuarioNoPeriodoMulti(@Param("inicio") LocalDateTime inicio,
                                                             @Param("fim") LocalDateTime fim,

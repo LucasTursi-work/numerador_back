@@ -47,6 +47,9 @@ services:
 
 volumes:
   postgres-data: 
+    name: numerador_postgres-data
+    external: true
+
 
 networks:
   numerador-network:
