@@ -69,6 +69,7 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Status status;
     
+    @Builder.Default
     @Column(name = "tentativas_login")
     private int tentativasLogin = 0;
 
@@ -82,6 +83,7 @@ public class Usuario implements UserDetails {
 //    @Column(name = "validador")
 //    private String codigoValidador;
     
+    @Builder.Default
     @Column(name = "senha_provisoria")
     private Boolean senhaProvisoria = false;
 

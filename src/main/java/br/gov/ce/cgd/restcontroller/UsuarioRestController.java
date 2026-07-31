@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +44,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/usuarios")
 @Tag(name = "Usuários", description = "API para gerenciamento completo de usuários")
 public class UsuarioRestController {
-
+    @Autowired
+    private PasswordEncoder encoder;
     private final UsuarioService usuarioService;
    
 
@@ -56,7 +58,7 @@ public class UsuarioRestController {
 @PostMapping
 @ResponseStatus(HttpStatus.CREATED)
 public ResponseEntity<UsuarioDTO> criar(@Valid @RequestBody UsuarioCreateDTO dto) {
-    Usuario usuario = UsuarioMapper.fromCreateDTO(dto);
+    Usuario usuario = UsuarioMapper.fromCreateDTO(dto, encoder);
     Usuario salvo = usuarioService.salvar(usuario);
 
     // Simplificamos: retornamos apenas o objeto e o status 201

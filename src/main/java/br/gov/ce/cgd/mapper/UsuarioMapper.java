@@ -21,12 +21,12 @@ public class UsuarioMapper {
                 .build();
     }
 
-    public static Usuario fromCreateDTO(UsuarioCreateDTO dto) {
+    public static Usuario fromCreateDTO(UsuarioCreateDTO dto, PasswordEncoder encoder) {
         return Usuario.builder()
                 .nome(dto.getNome())
                 .cpf(dto.getCpf())
                 .email(dto.getEmail())
-                .senha(dto.getSenha())
+                .senha(dto.getSenha() != null ? encoder.encode(dto.getSenha()) : null)
                 .perfil(dto.getPerfil())
                 .status(dto.getStatus())
                 .build();
