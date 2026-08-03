@@ -86,8 +86,8 @@ public class UsuarioServiceImpl implements UsuarioService {
                 + "Acesse o endereço abaixo para utilizar o numerador \n"
                 + "http://numerador.cgd.ce.gov.br:8090/numerador \n"
                 + "Você deverá alterar no primeiro acesso.";
-
-        emailService.enviarEmail(salvo.getEmail(), assunto, mensagem);
+        //COMENTADO por que o envio de e-mail automático estava causando erro 500 ao cadastrar usuário. Habilitar quando o serviço de e-mail estiver configurado
+        //emailService.enviarEmail(salvo.getEmail(), assunto, mensagem);
 
         return salvo;
     }
