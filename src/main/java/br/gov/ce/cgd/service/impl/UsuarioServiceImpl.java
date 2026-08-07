@@ -31,7 +31,9 @@ import br.gov.ce.cgd.repository.UsuarioRepository;
 import br.gov.ce.cgd.service.EmailService;
 import br.gov.ce.cgd.service.GoogleAuthenticatorService;
 import br.gov.ce.cgd.service.UsuarioService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
@@ -86,9 +88,15 @@ public class UsuarioServiceImpl implements UsuarioService {
                 + "Acesse o endereço abaixo para utilizar o numerador \n"
                 + "http://numerador.cgd.ce.gov.br:8090/numerador \n"
                 + "Você deverá alterar no primeiro acesso.";
-        //COMENTADO por que o envio de e-mail automático estava causando erro 500 ao cadastrar usuário. Habilitar quando o serviço de e-mail estiver configurado
+        //COMENTADO por que o envio de e-mail automático estava causando erro 500 ao cadastrar usuário. Habilitar quando em produção
         //emailService.enviarEmail(salvo.getEmail(), assunto, mensagem);
-
+        try {
+    emailService.enviarEmail(salvo.getEmail(), assunto, mensagem);
+} catch (Exception e) {
+    // O e-mail falhou (por ser e-mail fictício ou SMTP offline),
+    // mas o usuário É SALVO no banco e o Angular recebe Status 201 Success!
+    log.error("Não foi possível enviar o e-mail de boas-vindas: {}", e.getMessage());
+}
         return salvo;
     }
     
